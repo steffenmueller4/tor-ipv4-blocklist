@@ -34,7 +34,8 @@ def main():
         )
 
         for tor_ipv4 in re.finditer(
-            r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b", original_rules
+            r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b",
+            original_rules
         ):
             ipv4_cidr = tor_ipv4.group(0) + "/32"
             ip_list.append(ipv4_cidr)
