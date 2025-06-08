@@ -47,6 +47,12 @@ def main():
 
     with open(OUTPUT_FILE, 'w', encoding="utf-8") as f:
         f.writelines((str(i)+'\n' for i in ip_list))
+    
+    logger.info(
+        "%s IPv4 addresses have been written successfully to %s.",
+        len(ip_list),
+        OUTPUT_FILE
+    )
 
 
 if __name__ == "__main__":
