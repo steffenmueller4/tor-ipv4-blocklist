@@ -2,6 +2,12 @@ name: update-blocklist
 # This workflow updates the to-ipv4-blocklist.txt by running the main.py script daily at 2:30 AM UTC.
 
 on:
+  workflow_dispatch:
+    inputs:
+      reason:
+          type: string
+          description: Reason of triggering the workflow
+          default: 'Testing'
   schedule:
   - cron: "01 16 * * *"
 
