@@ -14,3 +14,7 @@ The IPv4 blocklist is updated every night at 01:45.
 Other sources of TOR node/exit node lists are:
  * [https://rules.emergingthreats.net/blockrules/emerging-compromised.rules](Proofpoint Emerging Threats Rules)
  * [https://www.dan.me.uk/tornodes](dan.me.uk)
+
+## License
+
+Please refer to [LICENSE](LICENSE)
