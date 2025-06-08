@@ -9,7 +9,7 @@ on:
           description: Reason of triggering the workflow
           default: 'Testing'
   schedule:
-  - cron: "45 01 * * *"
+  - cron: "45 1 * * *"
 
 jobs:
   build:
@@ -33,6 +33,7 @@ jobs:
       run: |
         python main.py
     - name: Update tor-ipv4-blocklist.txt
+      # https://joht.github.io/johtizen/build/2022/01/20/github-actions-push-into-repository.html
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "Update tor-ipv4-blocklist.txt"
