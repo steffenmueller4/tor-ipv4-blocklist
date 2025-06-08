@@ -1,7 +1,8 @@
-import requests
+"""Module to fetch and process the Emerging Threats Tor rules."""
 import re
 import sys
 import logging
+import requests
 
 
 EMERGING_THREATS_TOR_RULES_URL = "https://rules.emergingthreats.net/" \
@@ -17,17 +18,19 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     ip_list = []
-    with requests.get(EMERGING_THREATS_TOR_RULES_URL) as response:
+    with requests.get(EMERGING_THREATS_TOR_RULES_URL, timeout=30) as response:
         if response.status_code != 200:
             logger.error(
-                f"Failed to fetch rules: {response.status_code}"
+                "Failed to fetch rules: %d",
+                response.status_code
             )
             sys.exit(1)
 
         original_rules = response.text
 
         logger.info(
-            f"Fetched {len(original_rules)} emerging-tor.rules successfully."
+            "Fetched %d emerging-tor.rules successfully.",
+            len(original_rules)
         )
 
         for tor_ipv4 in re.finditer(
@@ -37,10 +40,12 @@ def main():
             ip_list.append(ipv4_cidr)
 
     logger.info(
-        f"Found {len(ip_list)} IPv4 addresses in the rules. "
-        f"Writing to {OUTPUT_FILE}..."
+        "Found %s IPv4 addresses in the rules. Writing to %s...",
+        len(ip_list),
+        OUTPUT_FILE
     )
-    with open(OUTPUT_FILE, 'w') as f:
+
+    with open(OUTPUT_FILE, 'w', encoding="utf-8") as f:
         f.writelines((str(i)+'\n' for i in ip_list))
 
 
