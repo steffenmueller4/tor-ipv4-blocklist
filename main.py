@@ -48,7 +48,7 @@ def main():
         len(ip_list)
     )
 
-    # Write normal IPv4 address list to file
+    # Write normal IPv4 addresses list to file
     with open(OUTPUT_FILE_IP, 'w', encoding="utf-8") as f:
         f.writelines((str(i)+'\n' for i in ip_list))
         logger.info(
@@ -57,7 +57,7 @@ def main():
             OUTPUT_FILE_IP
         )
 
-    # Write CIDR IPv4 address list to file
+    # Write CIDR IPv4 addresses list to file
     with open(OUTPUT_FILE_CIDR, 'w', encoding="utf-8") as f:
         f.writelines((str(i)+'\n' for i in ip_list_cidr))
         logger.info(
