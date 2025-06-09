@@ -35,13 +35,13 @@ def main():
             len(original_rules)
         )
 
-        for tor_ipv4 in re.finditer(
+        for extracted_ipv4 in re.finditer(
             r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b",
             original_rules
         ):
-            ipv4 = tor_ipv4.group(0)
-            ip_list.append(ipv4)
-            ip_list_cidr.append(f"{ipv4}/32")
+            tor_ipv4 = extracted_ipv4.group(0)
+            ip_list.append(tor_ipv4)
+            ip_list_cidr.append(f"{tor_ipv4}/32")
 
     logger.info(
         "Found %s IPv4 addresses in the rules. Writing to files...",
