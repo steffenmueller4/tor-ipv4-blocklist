@@ -1,4 +1,4 @@
-name: update-blocklist
+name: Update-blocklist
 # This workflow updates the to-ipv4-blocklist.txt by running the main.py script daily at 1:45 AM UTC.
 
 on:
