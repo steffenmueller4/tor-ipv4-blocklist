@@ -11,4 +11,4 @@ pyflakes==3.3.2
 pylint==3.3.7
 requests==2.32.4
 tomlkit==0.13.3
-urllib3==2.4.0
+urllib3==2.5.0
