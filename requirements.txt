@@ -5,7 +5,7 @@ dill==0.4.1
 idna==3.10
 isort==6.0.1
 mccabe==0.7.0
-platformdirs==4.3.8
+platformdirs==4.9.4
 pycodestyle==2.14.0
 pyflakes==3.4.0
 pylint==4.0.5
