@@ -1,6 +1,6 @@
 astroid==4.0.4
 certifi==2026.1.4
-charset-normalizer==3.4.4
+charset-normalizer==3.4.5
 dill==0.4.1
 idna==3.10
 isort==6.0.1
