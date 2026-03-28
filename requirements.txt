@@ -9,6 +9,6 @@ platformdirs==4.9.4
 pycodestyle==2.14.0
 pyflakes==3.4.0
 pylint==4.0.5
-requests==2.32.5
+requests==2.33.0
 tomlkit==0.14.0
 urllib3==2.6.3
