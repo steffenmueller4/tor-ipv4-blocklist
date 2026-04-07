@@ -34,7 +34,7 @@ jobs:
         python main.py
     - name: Update tor-ipv4-blocklist.txt
       # https://joht.github.io/johtizen/build/2022/01/20/github-actions-push-into-repository.html
-      uses: stefanzweifel/git-auto-commit-action@v5
+      uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message: "Update TOR IPv4 lists"
         file_pattern: "tor-ipv4-*.txt"
