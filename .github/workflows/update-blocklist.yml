@@ -39,4 +39,4 @@ jobs:
         commit_message: "Update TOR IPv4 lists"
         file_pattern: "tor-ipv4-*.txt"
         branch: main
-        author_name: "GitHub Actions"
+        commit_user_name: "GitHub Actions"
