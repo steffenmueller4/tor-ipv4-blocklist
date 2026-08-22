@@ -10,5 +10,5 @@ pycodestyle==2.14.0
 pyflakes==3.4.0
 pylint==4.0.5
 requests==2.33.1
-tomlkit==0.14.0
+tomlkit==0.15.0
 urllib3==2.7.0
