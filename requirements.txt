@@ -15,5 +15,5 @@ Pygments==2.21.0
 pylint==4.0.5
 pytest==9.1.1
 requests==2.34.2
-tomlkit==0.15.0
+tomlkit==0.15.1
 urllib3==2.7.0
