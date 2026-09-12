@@ -10,6 +10,18 @@ Thus, you can use those links to to be used in your router's configuration such 
 The IPv4 blocklist is updated every night.
 As the generation relies on a [scheduled GitHub Action](/.github/workflows/update-blocklist.yml), there is no guaratuee that the file is refreshed at a specific time.
 
+## Development
+
+Install the dependencies and run the test suite with:
+
+```
+make init
+make test
+```
+
+The tests in [tests/test_main.py](tests/test_main.py) run offline: the HTTP request to the Emerging Threats rules is stubbed out and the blocklists are written to a temporary directory.
+They are also executed by a [GitHub Action](/.github/workflows/tests.yml) on every push that touches the Python code.
+
 ## Other Sources
 
 Other sources of TOR node/exit node lists are:

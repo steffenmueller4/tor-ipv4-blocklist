@@ -7,4 +7,7 @@ pylint:
 run:
 	python ./main.py
 
+test:
+	pytest
+
 .PHONY: init test
