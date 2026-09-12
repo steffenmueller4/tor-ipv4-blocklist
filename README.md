@@ -2,6 +2,7 @@
 
 This repository contains a Python script (`main.py`) that compiles text files with TOR IPv4 addresses (`tor-ipv4-blocklist.txt` or `tor-ipv4-cidr-blocklist.txt`) from [Proofpoint's Emerging Tor Rules](https://rules.emergingthreats.net/blockrules/emerging-compromised.rules).
 The script just uses IPv4 addresses and simply ignores IPv6 addresses from the Proofpoint's Emerging Tor Rules.
+Extracted addresses are validated before they are written: malformed dotted quads and non-routable addresses (private, loopback, link-local, reserved, broadcast and multicast ranges) are dropped, and a rules file that yields no valid address at all aborts the run instead of overwriting the blocklists with empty files.
 The TOR IPv4 blocklists are `tor-ipv4-blocklist.txt` (IPv4 addresses) and `tor-ipv4-cidr-blocklist.txt` (IPv4 addresses in CIDR notation) in this repository.
 
 The up-to-date TOR IPv4 blocklist is downloadable from: [TOR IPv4 Blocklist](https://raw.githubusercontent.com/steffenmueller4/tor-ipv4-blocklist/refs/heads/main/tor-ipv4-blocklist.txt) or [TOR IPv4 Blocklist in CIDR notation](https://raw.githubusercontent.com/steffenmueller4/tor-ipv4-blocklist/refs/heads/main/tor-ipv4-cidr-blocklist.txt).

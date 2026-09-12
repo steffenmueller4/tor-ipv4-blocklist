@@ -128,15 +128,15 @@ def test_ipv6_addresses_are_ignored(output_files, fake_get):
     """IPv6 nodes are skipped, as documented in the README."""
     ip_file, cidr_file = output_files
     rules = (
-        "alert ip [2001:db8::1,fe80::1%eth0,2a0b:f4c2:2::1] any -> "
+        "alert ip [2001:db8::1,fe80::1%eth0,2a0b:f4c2:2::1,9.9.9.9] any -> "
         "$HOME_NET any (sid:2520002;)\n"
     )
     fake_get(text=rules)
 
     main.main()
 
-    assert read_lines(ip_file) == []
-    assert read_lines(cidr_file) == []
+    assert read_lines(ip_file) == ["9.9.9.9"]
+    assert read_lines(cidr_file) == ["9.9.9.9/32"]
 
 
 def test_duplicate_addresses_are_kept(output_files, fake_get):
@@ -161,15 +161,33 @@ def test_addresses_are_written_in_the_order_they_appear(
     assert read_lines(ip_file) == ["9.9.9.9", "1.1.1.1", "5.5.5.5"]
 
 
-def test_empty_rules_produce_empty_files(output_files, fake_get):
-    """A rules file without any address still produces both output files."""
+def test_rules_without_addresses_abort_without_writing(
+    output_files, fake_get
+):
+    """An address-less rules file must not truncate the published lists."""
     ip_file, cidr_file = output_files
+    ip_file.write_text("1.2.3.4\n", encoding="utf-8")
+    cidr_file.write_text("1.2.3.4/32\n", encoding="utf-8")
     fake_get(text="# no rules today\n")
 
-    main.main()
+    with pytest.raises(SystemExit) as excinfo:
+        main.main()
 
-    assert ip_file.read_text(encoding="utf-8") == ""
-    assert cidr_file.read_text(encoding="utf-8") == ""
+    assert excinfo.value.code == 1
+    assert ip_file.read_text(encoding="utf-8") == "1.2.3.4\n"
+    assert cidr_file.read_text(encoding="utf-8") == "1.2.3.4/32\n"
+
+
+@pytest.mark.usefixtures("output_files")
+def test_an_address_less_response_is_logged_as_an_error(fake_get, caplog):
+    """The refusal to overwrite is visible in the workflow log."""
+    fake_get(text="# no rules today\n")
+
+    with caplog.at_level(logging.ERROR, logger=main.logger.name):
+        with pytest.raises(SystemExit):
+            main.main()
+
+    assert "refusing to overwrite" in caplog.text
 
 
 @pytest.mark.usefixtures("output_files")
@@ -239,19 +257,102 @@ def test_previous_content_is_overwritten_not_appended(
     assert read_lines(cidr_file) == ["1.2.3.4/32"]
 
 
-@pytest.mark.xfail(
-    reason="the extraction regex does not validate octet ranges or "
-           "dotted-quad boundaries",
-    strict=True,
+@pytest.mark.parametrize(
+    "junk", ["999.1.2.3", "1.2.3.400", "1.2.3.4.5", "01.2.3.4", "1.2.3.04"]
 )
-@pytest.mark.parametrize("text", ["999.1.2.3", "1.2.3.400", "1.2.3.4.5"])
 def test_malformed_dotted_numbers_are_not_extracted(
-    output_files, fake_get, text
+    output_files, fake_get, junk
 ):
-    """Known gap: non-addresses that look like dotted quads slip through."""
+    """Non-addresses that merely look like dotted quads are dropped."""
     ip_file, _ = output_files
-    fake_get(text=text)
+    fake_get(text=f"[8.8.8.8,{junk}]")
 
     main.main()
 
-    assert read_lines(ip_file) == []
+    assert read_lines(ip_file) == ["8.8.8.8"]
+
+
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "999.1.2.3",      # octet out of range
+        "1.2.3.400",      # trailing octet out of range
+        "256.256.256.256",
+        "01.2.3.4",       # leading zero
+        "1.2.3.04",
+        "1.2.3.4.5",      # longer dotted number
+        "1.2.3",          # too few octets
+        "v1.2.3.4-beta",  # version token glued to a word
+        "1.2.3.4abc",
+    ],
+)
+def test_extract_rejects_malformed_candidates(candidate):
+    """Only real dotted quads survive the extraction."""
+    assert not main.extract_ipv4_addresses(candidate)
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "10.0.0.1",         # RFC 1918
+        "172.16.0.1",
+        "192.168.1.1",
+        "127.0.0.1",        # loopback
+        "0.0.0.0",          # "this network"
+        "0.4.8.1",          # a Tor version number would land here
+        "169.254.1.1",      # link-local
+        "100.64.0.1",       # CGNAT
+        "192.0.2.1",        # TEST-NET-1
+        "198.51.100.1",     # TEST-NET-2
+        "203.0.113.7",      # TEST-NET-3
+        "240.0.0.1",        # reserved
+        "255.255.255.255",  # broadcast
+        "224.0.0.1",        # multicast, which is_global alone does not catch
+        "239.1.2.3",
+    ],
+)
+def test_extract_drops_non_routable_addresses(address):
+    """Blocking a LAN, loopback or reserved range would break the consumer."""
+    assert not main.extract_ipv4_addresses(f"[{address}]")
+
+
+@pytest.mark.parametrize(
+    "address", ["1.0.0.1", "8.8.8.8", "171.25.193.25", "223.255.255.254"]
+)
+def test_extract_keeps_globally_routable_addresses(address):
+    """Addresses at the edges of the routable space are still extracted."""
+    assert main.extract_ipv4_addresses(f"[{address}]") == [address]
+
+
+@pytest.mark.parametrize(
+    ("rules", "expected"),
+    [
+        ("[1.2.3.4,5.6.7.8]", ["1.2.3.4", "5.6.7.8"]),
+        ("1.2.3.4/32", ["1.2.3.4"]),
+        ("$HOME_NET -> 1.2.3.4 any", ["1.2.3.4"]),
+        ("sid:2520000; rev:5555; 1.2.3.4;", ["1.2.3.4"]),
+        ("created_at 2008_12_01, updated_at 2026_01_01", []),
+        ("doc.emergingthreats.net/bin/view/Main/TorRules", []),
+    ],
+)
+def test_extract_handles_the_real_rule_syntax(rules, expected):
+    """Surrounding rule punctuation neither hides nor invents addresses."""
+    assert main.extract_ipv4_addresses(rules) == expected
+
+
+def test_extract_logs_a_summary_of_skipped_candidates(caplog):
+    """A malformed upstream file is visible without flooding the log."""
+    rules = "[8.8.8.8,999.1.2.3,1.2.3.400,10.0.0.1]"
+
+    with caplog.at_level(logging.WARNING, logger=main.logger.name):
+        assert main.extract_ipv4_addresses(rules) == ["8.8.8.8"]
+
+    assert "Ignored 2 malformed and 1 non-routable" in caplog.text
+
+
+def test_extract_stays_quiet_when_everything_is_valid(caplog):
+    """The nightly run logs no warning for a healthy rules file."""
+    with caplog.at_level(logging.WARNING, logger=main.logger.name):
+        main.extract_ipv4_addresses(SAMPLE_RULES)
+
+    assert caplog.text == ""
