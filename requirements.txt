@@ -1,4 +1,4 @@
-astroid==4.0.4
+astroid==4.3.1
 certifi==2026.7.22
 charset-normalizer==3.5.1
 dill==0.4.1
