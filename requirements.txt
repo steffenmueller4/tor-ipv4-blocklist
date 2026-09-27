@@ -10,7 +10,7 @@ packaging==26.3
 platformdirs==4.11.9
 pluggy==1.6.0
 pycodestyle==2.14.0
-pyflakes==3.4.0
+pyflakes==4.0.0
 Pygments==2.21.0
 pylint==4.0.8
 pytest==9.1.1
